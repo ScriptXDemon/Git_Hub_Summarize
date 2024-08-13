@@ -8,17 +8,11 @@ api_key = "AIzaSyDEdlTxz472Kgf_1pKKYnHE8eN2HOvzZFA"
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# Function to fetch README content using GitHub API with authentication
+# Function to fetch README content using GitHub API
 def fetch_readme_from_github(repo_url):
     try:
-        # Replace with your GitHub token
-        github_token = "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"
-        
         repo_api_url = repo_url.replace("https://github.com/", "https://api.github.com/repos/") + "/readme"
-        headers = {
-            'Accept': 'application/vnd.github.v3+json',
-            'Authorization': f'token {github_token}'
-        }
+        headers = {'Accept': 'application/vnd.github.v3+json'}
         response = requests.get(repo_api_url, headers=headers)
         response.raise_for_status()
         readme_data = response.json()
