@@ -1,36 +1,28 @@
 import streamlit as st
 import google.generativeai as genai
 import os
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
+import requests
 
-
+# Configure the Generative AI model
 api_key = "AIzaSyDEdlTxz472Kgf_1pKKYnHE8eN2HOvzZFA"
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
+# Function to fetch README content using GitHub API
 def fetch_readme_from_github(repo_url):
-    options = Options()
-    options.add_argument("--headless")
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-
     try:
-        driver.get(repo_url)
-
-        # Find the README file (assuming it's in the main branch)
-        readme_element = driver.find_element(By.XPATH, "//article[@class='markdown-body entry-content container-lg']")
-        readme_text = readme_element.text
+        repo_api_url = repo_url.replace("https://github.com/", "https://api.github.com/repos/") + "/readme"
+        headers = {'Accept': 'application/vnd.github.v3+json'}
+        response = requests.get(repo_api_url, headers=headers)
+        response.raise_for_status()
+        readme_data = response.json()
+        readme_text = requests.get(readme_data['download_url']).text
 
         return readme_text
 
     except Exception as e:
         st.error(f"An error occurred while fetching the README file: {e}")
         return None
-    finally:
-        driver.quit()
 
 # Streamlit App
 st.set_page_config(page_title="GitSummarize", page_icon="📄", layout="centered")
