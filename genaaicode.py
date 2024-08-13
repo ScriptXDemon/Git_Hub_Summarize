@@ -12,7 +12,7 @@ model = genai.GenerativeModel('gemini-1.5-flash')
 def fetch_readme_from_github(repo_url):
     try:
         # Replace with your GitHub token
-        github_token = os.getenv("GITHUB_TOKEN", "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")
+        github_token = os.getenv("GITHUB_TOKEN", "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")
         
         repo_api_url = repo_url.replace("https://github.com/", "https://api.github.com/repos/") + "/readme"
         headers = {
