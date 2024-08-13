@@ -8,11 +8,17 @@ api_key = "AIzaSyDEdlTxz472Kgf_1pKKYnHE8eN2HOvzZFA"
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# Function to fetch README content using GitHub API
+# Function to fetch README content using GitHub API with authentication
 def fetch_readme_from_github(repo_url):
     try:
+        # Replace with your GitHub token
+        github_token = os.getenv("GITHUB_TOKEN", "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")
+        
         repo_api_url = repo_url.replace("https://github.com/", "https://api.github.com/repos/") + "/readme"
-        headers = {'Accept': 'application/vnd.github.v3+json'}
+        headers = {
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': f'token {github_token}'
+        }
         response = requests.get(repo_api_url, headers=headers)
         response.raise_for_status()
         readme_data = response.json()
@@ -107,7 +113,7 @@ elif option == "Summarize GitHub README":
 
                 # Option to download summary
                 summary_file_path = "readme_summary.txt"
-                with open(summary_file_path, 'w', encoding='utf-8') as summary_file:
+                with open(summary_file_path, 'w', encoding='utf-8') as summary_file):
                     summary_file.write(summary_text)
                 
                 st.download_button(
