@@ -2,6 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 import requests
 import os
+import transformers
 from transformers import pipeline
 
 # Configure the Generative AI model
