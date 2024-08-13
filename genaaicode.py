@@ -113,7 +113,7 @@ elif option == "Summarize GitHub README":
 
                 # Option to download summary
                 summary_file_path = "readme_summary.txt"
-                with open(summary_file_path, 'w', encoding='utf-8') as summary_file):
+                with open(summary_file_path, 'w', encoding='utf-8') as summary_file:
                     summary_file.write(summary_text)
                 
                 st.download_button(
