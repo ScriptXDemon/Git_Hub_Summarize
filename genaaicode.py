@@ -1,12 +1,17 @@
 import streamlit as st
 import google.generativeai as genai
-import os
 import requests
+import os
+from transformers import pipeline
 
 # Configure the Generative AI model
 api_key = "AIzaSyDEdlTxz472Kgf_1pKKYnHE8eN2HOvzZFA"
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-1.5-flash')
+
+# Initialize Hugging Face models
+summarizer = pipeline("summarization")
+sentiment_analyzer = pipeline("sentiment-analysis")
 
 # Function to fetch README content using GitHub API
 def fetch_readme_from_github(repo_url):
@@ -30,9 +35,9 @@ st.markdown(
     """
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f5f5;
-            color: #333333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #edf2f7;
+            color: #333;
         }
         .stApp {
             background-color: #ffffff;
@@ -40,7 +45,7 @@ st.markdown(
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        h1 {
+        h1, h2, h3 {
             color: #2a9d8f;
         }
         .stButton button {
@@ -48,6 +53,10 @@ st.markdown(
             color: white;
             border-radius: 5px;
             padding: 10px 20px;
+            border: none;
+        }
+        .stButton button:hover {
+            background-color: #21867a;
         }
     </style>
     """,
@@ -59,7 +68,7 @@ st.title("GitSummarize")
 # Sidebar for options
 option = st.sidebar.radio(
     "Choose an option:",
-    ("Summarize File", "Summarize GitHub README", "Prompt Text")
+    ("Summarize File", "Summarize GitHub README", "Prompt Text", "Analyze Sentiment")
 )
 
 if option == "Summarize File":
@@ -70,18 +79,13 @@ if option == "Summarize File":
         file_content = uploaded_file.read().decode("utf-8")
         st.write("File content read. Summarizing...")
 
-        summary_prompt = f"Summarize the following content:\n\n{file_content}"
-        response = model.generate_content(summary_prompt)
-        summary_text = response.text
+        # Hugging Face summarization
+        summary_text = summarizer(file_content, max_length=150, min_length=30, do_sample=False)[0]['summary_text']
 
         st.subheader("Summary")
         st.write(summary_text)
 
         # Option to download summary
-        summary_file_path = "summary.txt"
-        with open(summary_file_path, 'w', encoding='utf-8') as summary_file:
-            summary_file.write(summary_text)
-        
         st.download_button(
             label="Download Summary",
             data=summary_text,
@@ -98,18 +102,14 @@ elif option == "Summarize GitHub README":
             readme_content = fetch_readme_from_github(repo_url)
             if readme_content:
                 st.write("README content fetched. Summarizing...")
-                summary_prompt = f"Summarize the following README content:\n\n{readme_content}"
-                response = model.generate_content(summary_prompt)
-                summary_text = response.text
+
+                # Hugging Face summarization
+                summary_text = summarizer(readme_content, max_length=150, min_length=30, do_sample=False)[0]['summary_text']
 
                 st.subheader("Summary")
                 st.write(summary_text)
 
                 # Option to download summary
-                summary_file_path = "readme_summary.txt"
-                with open(summary_file_path, 'w', encoding='utf-8') as summary_file:
-                    summary_file.write(summary_text)
-                
                 st.download_button(
                     label="Download Summary",
                     data=summary_text,
@@ -132,3 +132,16 @@ elif option == "Prompt Text":
             st.write(response.text)
         else:
             st.error("Please enter a prompt.")
+
+elif option == "Analyze Sentiment":
+    st.header("Analyze Sentiment of a Text")
+    text_to_analyze = st.text_area("Enter the text to analyze:")
+
+    if st.button("Analyze"):
+        if text_to_analyze:
+            sentiment_result = sentiment_analyzer(text_to_analyze)[0]
+            st.subheader("Sentiment Analysis")
+            st.write(f"Label: {sentiment_result['label']}")
+            st.write(f"Score: {sentiment_result['score']:.2f}")
+        else:
+            st.error("Please enter text to analyze.")
