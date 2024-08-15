@@ -191,21 +191,20 @@ if option == "Summarize File":
     uploaded_file = st.file_uploader("Choose a file", type=["txt", "md", "docx", "pdf"])
 
     if uploaded_file is not None:
-        file_extension = os.path.splitext(uploaded_file.name)[1]
-        
-        # Read file content based on type
-        if file_extension == ".txt" or file_extension == ".md":
-            file_content = uploaded_file.read().decode("utf-8")
-        elif file_extension == ".docx":
-            file_content = read_docx(uploaded_file)
-        elif file_extension == ".pdf":
-            file_content = read_pdf(uploaded_file)
-
         st.write("File content read. Summarizing...")
 
         word_count = st.number_input("Enter the number of words for the summary:", min_value=10, max_value=1000, value=100)
+        if st.button("Confirm Summarization"):
+            # Determine file type and read content
+            file_extension = os.path.splitext(uploaded_file.name)[1]
+            
+            if file_extension == ".txt" or file_extension == ".md":
+                file_content = uploaded_file.read().decode("utf-8")
+            elif file_extension == ".docx":
+                file_content = read_docx(uploaded_file)
+            elif file_extension == ".pdf":
+                file_content = read_pdf(uploaded_file)
 
-        if st.button("Generate Summary"):
             summary_prompt = f"Summarize the following content in {word_count} words:\n\n{file_content}"
             response = model.generate_content(summary_prompt)
             summary_text = response.text
@@ -225,78 +224,74 @@ elif option == "Summarize GitHub README":
     st.header("Summarize a GitHub README")
     repo_url = st.text_input("Enter the GitHub repository URL")
 
-    if st.button("Fetch and Summarize"):
-        if st.confirm_button("Are you sure you want to fetch and summarize the README?"):
-            if repo_url:
-                readme_content = fetch_readme_from_github(repo_url)
-                if readme_content:
-                    st.write("README content fetched. Summarizing...")
-                    summary_prompt = (
-                        f"Summarize the following README content in detail, "
-                        f"with a length between 250 to 500 lines, and include "
-                        f"the skills required to build the project:\n\n{readme_content}"
-                    )
-                    response = model.generate_content(summary_prompt)
-                    summary_text = response.text
+    if st.button("Confirm Fetch and Summarize"):
+        if repo_url:
+            readme_content = fetch_readme_from_github(repo_url)
+            if readme_content:
+                st.write("README content fetched. Summarizing...")
+                summary_prompt = (
+                    f"Summarize the following README content in detail, "
+                    f"with a length between 250 to 500 lines, and include "
+                    f"the skills required to build the project:\n\n{readme_content}"
+                )
+                response = model.generate_content(summary_prompt)
+                summary_text = response.text
 
-                    st.subheader("Detailed Summary")
-                    st.write(summary_text)
+                st.subheader("Detailed Summary")
+                st.write(summary_text)
 
-                    # Option to download summary
-                    st.download_button(
-                        label="Download Summary",
-                        data=summary_text,
-                        file_name="readme_summary.txt",
-                        mime="text/plain"
-                    )
-                else:
-                    st.error("Failed to fetch README content.")
+                # Option to download summary
+                st.download_button(
+                    label="Download Summary",
+                    data=summary_text,
+                    file_name="readme_summary.txt",
+                    mime="text/plain"
+                )
             else:
-                st.error("Please enter a valid GitHub repository URL.")
+                st.error("Failed to fetch README content.")
+        else:
+            st.error("Please enter a valid GitHub repository URL.")
 
 elif option == "Explain GitHub Code":
     st.header("Fetch and Explain GitHub Code")
     repo_url = st.text_input("Enter the GitHub repository URL")
 
-    if st.button("Fetch and Explain"):
-        if st.confirm_button("Are you sure you want to fetch and explain the code?"):
-            if repo_url:
-                explanations = fetch_and_explain_code_from_github(repo_url)
-                if explanations:
-                    st.write("Code files fetched and explained:")
-                    for filename, explanation in explanations:
-                        st.subheader(f"File: {filename}")
-                        st.write(explanation)
-                else:
-                    st.error("Failed to fetch or explain code content.")
+    if st.button("Confirm Fetch and Explain"):
+        if repo_url:
+            explanations = fetch_and_explain_code_from_github(repo_url)
+            if explanations:
+                st.write("Code files fetched and explained:")
+                for filename, explanation in explanations:
+                    st.subheader(f"File: {filename}")
+                    st.write(explanation)
             else:
-                st.error("Please enter a valid GitHub repository URL.")
+                st.error("Failed to fetch or explain code content.")
+        else:
+            st.error("Please enter a valid GitHub repository URL.")
 
 elif option == "Explain File Structure":
     st.header("Explain GitHub Repository Structure")
     repo_url = st.text_input("Enter the GitHub repository URL")
 
-    if st.button("Fetch and Explain Structure"):
-        if st.confirm_button("Are you sure you want to fetch and explain the repository structure?"):
-            if repo_url:
-                structure_explanation = fetch_and_explain_file_structure(repo_url)
-                if structure_explanation:
-                    st.subheader("Repository Structure Explanation")
-                    st.write(structure_explanation)
-                else:
-                    st.error("Failed to fetch or explain the repository structure.")
+    if st.button("Confirm Fetch and Explain Structure"):
+        if repo_url:
+            structure_explanation = fetch_and_explain_file_structure(repo_url)
+            if structure_explanation:
+                st.subheader("Repository Structure Explanation")
+                st.write(structure_explanation)
             else:
-                st.error("Please enter a valid GitHub repository URL.")
+                st.error("Failed to fetch or explain the repository structure.")
+        else:
+            st.error("Please enter a valid GitHub repository URL.")
 
 elif option == "Prompt Text":
     st.header("Generate Content from Prompt")
     prompt_text = st.text_area("Enter your prompt:")
 
-    if st.button("Generate"):
-        if st.confirm_button("Are you sure you want to generate content from this prompt?"):
-            if prompt_text:
-                response = model.generate_content(prompt_text)
-                st.subheader("Generated Content")
-                st.write(response.text)
-            else:
-                st.error("Please enter a prompt.")
+    if st.button("Generate Content"):
+        if prompt_text:
+            response = model.generate_content(prompt_text)
+            st.subheader("Generated Content")
+            st.write(response.text)
+        else:
+            st.error("Please enter a prompt.")
