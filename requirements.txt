@@ -1,6 +1,6 @@
 streamlit
 google-generativeai
 requests
-transformers
-torch
+PyPDF2
+docx
 python-dotenv
